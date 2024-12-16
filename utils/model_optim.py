@@ -267,7 +267,7 @@ def trainer(out, run_parameters, mapping_path, label_path, datapath, device, dat
     run_parameters['vid-val-f1'] = f1_best_vid
 
     
-    with open(os.path.join(out, f"info_{run_parameters['seed']}.json"), 'w') as fd:
+    with open(os.path.join(out, f"info.json"), 'w') as fd:
         json.dump(run_parameters, fd, indent=4)
 
     return dfm
