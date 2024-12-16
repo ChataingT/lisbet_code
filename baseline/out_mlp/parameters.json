@@ -1,0 +1,12 @@
+{
+    "input_size": 6800,
+    "hidden_size": 128,
+    "output_size": 1,
+    "learning_rate": 0.001,
+    "epochs": 500,
+    "batch_size": 64,
+    "seed": 42,
+    "test_ratio": 0.8,
+    "dropout_rate": 0.3,
+    "verbose": false
+}
