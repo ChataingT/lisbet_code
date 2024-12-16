@@ -6,7 +6,7 @@ import yaml
 import json
 import random
 import sys
-sys.path.append(r"C:\Users\chataint\Documents\projet\humanlisbet\baseline")
+sys.path.append(r"/home/share/schaer2/thibaut/humanlisbet/lisbet_code/utils")
 from utils import trainer, OptimizedMLP, CNN, LSTMModel
 
 def process_data_with_windows_mlp(df, window_size=200, stride=30):
@@ -121,7 +121,7 @@ def main():
 
     rooroot = r"C:\Users\chataint\Documents\projet\humanlisbet\results\bet_embedders\bet_embedders"
     root_fit = r"C:\Users\chataint\Documents\projet\humanlisbet\results\bet_fits\bet_fits"
-    folders = os.listdir(rooroot)
+    # folders = os.listdir(rooroot)
     # seeds = [random.randint(0, 109) for i in range(5)]
     seeds = [21,54,68,74,82]
 
@@ -195,7 +195,7 @@ def main():
 
     rooroot = r"C:\Users\chataint\Documents\projet\humanlisbet\results\bet_embedders\bet_embedders"
     root_fit = r"C:\Users\chataint\Documents\projet\humanlisbet\results\bet_fits\bet_fits"
-    folders = os.listdir(rooroot)
+    # folders = os.listdir(rooroot)
 
     # for fol in folders:
     #     print(fol)
@@ -268,8 +268,11 @@ def main():
 
 
     # LSTM
-    rooroot = r"C:\Users\chataint\Documents\projet\humanlisbet\results\bet_embedders\bet_embedders"
-    root_fit = r"C:\Users\chataint\Documents\projet\humanlisbet\results\bet_fits\bet_fits"
+    rooroot = r"/home/share/schaer2/thibaut/humanlisbet/bet_embedders"
+    root_fit = r"/home/share/schaer2/thibaut/humanlisbet/bet_fits"
+    mapping_path = r"/home/share/schaer2/thibaut/humanlisbet/datasets/humans/category_mapping.json"
+    label_path = r"/home/share/schaer2/thibaut/humanlisbet/datasets/humans/humans_annoted.label.json"
+
     folders = os.listdir(rooroot)
 
     for fol in folders:
@@ -287,8 +290,6 @@ def main():
             print(out)
             datapath = os.path.join(rooroot, fol, "embedding_train.numpy")
             dataval = os.path.join(rooroot, fol, "embedding_test.numpy")
-            mapping_path = r"C:\Users\chataint\Documents\projet\humanlisbet\datasets\humans\category_mapping.json"
-            label_path = r"C:\Users\chataint\Documents\projet\humanlisbet\datasets\humans\humans_annoted.label.json"
 
             bf = os.path.join(root_fit, fol, 'hyper_params.yaml')
             with open(bf, 'r') as fd:
