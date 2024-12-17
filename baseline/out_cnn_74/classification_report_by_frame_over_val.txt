@@ -1,0 +1,8 @@
+              precision    recall  f1-score   support
+
+         ASD       0.90      0.63      0.74     28670
+          TD       0.18      0.53      0.27      4319
+
+    accuracy                           0.61     32989
+   macro avg       0.54      0.58      0.50     32989
+weighted avg       0.80      0.61      0.68     32989

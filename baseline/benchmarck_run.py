@@ -166,13 +166,13 @@ def main():
 
 #         ######################################
 #         # Initialize the model
-        model = OptimizedMLP(INPUT_SIZE, HIDDEN_SIZE, OUTPUT_SIZE).to(device)
+        # model = OptimizedMLP(INPUT_SIZE, HIDDEN_SIZE, OUTPUT_SIZE).to(device)
 #         ######################################
 
-        dfm = trainer(out, run_parameters, mapping_path, label_path, datapath, device, dataval, model, process_data_with_windows_mlp)
+        # dfm = trainer(out, run_parameters, mapping_path, label_path, datapath, device, dataval, model, process_data_with_windows_mlp)
 
-        del model
-        del dfm
+        # del model
+        # del dfm
         
 
     # CNN
@@ -225,13 +225,13 @@ def main():
             json.dump(run_parameters, fd, indent=4)
 
         # Initialize the model, loss, and optimizer
-        model = CNN(input_size=INPUT_SIZE, sequence_length=WINDOW, num_filters=NUM_FILTER, 
-                    kernel_size=KERNEL_SIZE, pool_size=POOL_SIZE, hidden_size=HIDDEN_SIZE, output_size=OUTPUT_SIZE).to(device)
+        # model = CNN(input_size=INPUT_SIZE, sequence_length=WINDOW, num_filters=NUM_FILTER, 
+        #             kernel_size=KERNEL_SIZE, pool_size=POOL_SIZE, hidden_size=HIDDEN_SIZE, output_size=OUTPUT_SIZE).to(device)
 
-        dfm = trainer(out, run_parameters, mapping_path, label_path, datapath, device, dataval, model, process_data_with_windows_cnn)
+        # dfm = trainer(out, run_parameters, mapping_path, label_path, datapath, device, dataval, model, process_data_with_windows_cnn)
 
-        del model
-        del dfm
+        # del model
+        # del dfm
 
     # LSTM
 
@@ -275,7 +275,6 @@ def main():
             "data":'kp',
             'model':'lstm',
         }
-        run_parameters.update(task)
 
         with open(os.path.join(out, 'parameters.json'), 'w') as fd:
             json.dump(run_parameters, fd, indent=4)
