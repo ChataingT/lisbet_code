@@ -32,8 +32,8 @@ def process_data_with_windows_mlp(df, window_size=200, stride=30):
         vd = video_data.drop(['video', 'diagnosis'], axis=1).to_numpy()
         num_frames= len(vd)
         # Create windows
-        for start in range(0, num_frames - 200 + 1, 100):
-            window = vd[start : start + 200]
+        for start in range(0, num_frames - window_size + 1, stride):
+            window = vd[start : start + window_size]
             X.append(window.flatten())
             y.append(diag)
             idx_vid.append(video_id)
@@ -104,7 +104,7 @@ def process_data_with_windows_lstm(df, window_size=200, stride=30):
         
         # Create windows
         for start in range(0, num_frames - window_size + 1, stride):
-            window = vd[start : start + 200]
+            window = vd[start : start + window_size]
             X.append(window)
             y.append(diag)
             idx_vid.append(video_id)
@@ -119,83 +119,84 @@ def process_data_with_windows_lstm(df, window_size=200, stride=30):
 def main():
     # mlp
 
-    rooroot = r"C:\Users\chataint\Documents\projet\humanlisbet\results\bet_embedders\bet_embedders"
-    root_fit = r"C:\Users\chataint\Documents\projet\humanlisbet\results\bet_fits\bet_fits"
-    # folders = os.listdir(rooroot)
+    rooroot = r"/home/share/schaer2/thibaut/humanlisbet/bet_embedders"
+    root_fit = r"/home/share/schaer2/thibaut/humanlisbet/bet_fits"
+    mapping_path = r"/home/share/schaer2/thibaut/humanlisbet/datasets/humans/category_mapping.json"
+    label_path = r"/home/share/schaer2/thibaut/humanlisbet/datasets/humans/humans_annoted.label.json"
+
+
+    folders = os.listdir(rooroot)
     # seeds = [random.randint(0, 109) for i in range(5)]
     seeds = [21,54,68,74,82]
 
-    # for fol in folders:
-    #     if fol.endswith('ipynb'):
-    #         continue
-    #     print(fol)
-    #     for seed in seeds:
-    #         out = os.path.join(rooroot, fol, f"out_mlp_{seed}")
-    #         datapath = os.path.join(rooroot, fol, "embedding_train.numpy")
-    #         dataval = os.path.join(rooroot, fol, "embedding_test.numpy")
-    #         mapping_path = r"C:\Users\chataint\Documents\projet\humanlisbet\datasets\humans\category_mapping.json"
-    #         label_path = r"C:\Users\chataint\Documents\projet\humanlisbet\datasets\humans\humans_annoted.label.json"
+    for fol in folders:
+        if fol.endswith('ipynb'):
+            continue
+        print(fol)
+        for seed in seeds:
+            out = os.path.join(rooroot, fol, f"out_mlp_{seed}")
+            datapath = os.path.join(rooroot, fol, "embedding_train.numpy")
+            dataval = os.path.join(rooroot, fol, "embedding_test.numpy")
 
-    #         bf = os.path.join(root_fit, fol, 'hyper_params.yaml')
-    #         with open(bf, 'r') as fd:
-    #             params = yaml.safe_load(fd)
-    #         os.makedirs(out, exist_ok=True)
+            bf = os.path.join(root_fit, fol, 'hyper_params.yaml')
+            with open(bf, 'r') as fd:
+                params = yaml.safe_load(fd)
+            os.makedirs(out, exist_ok=True)
 
 
-    #         # Hyperparameters
-    #         HIDDEN_SIZE = 128
-    #         OUTPUT_SIZE = 1  # Binary classification
-    #         LEARNING_RATE = 1e-5
-    #         EPOCHS = 500
-    #         BATCH_SIZE = 64
-    #         seed = 42
-    #         test_ratio = 0.8
-    #         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    #         DROPOUT_RATE = 0.3
-    #         verbose = False
-    #         EMB_DIM = params['emb_dim']
-    #         INPUT_SIZE = params['emb_dim'] * 200 # nbr kypoints * windows size in data preprocessing 
-    #         task = {k: 1 for k in params['task'].split(',')}
+            # Hyperparameters
+            HIDDEN_SIZE = 128
+            OUTPUT_SIZE = 1  # Binary classification
+            LEARNING_RATE = 1e-5
+            EPOCHS = 500
+            BATCH_SIZE = 64
+            # seed = seed
+            test_ratio = 0.8
+            device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+            DROPOUT_RATE = 0.3
+            verbose = False
+            EMB_DIM = params['emb_dim']
+            INPUT_SIZE = params['emb_dim'] * 200 # nbr kypoints * windows size in data preprocessing 
+            task = {k: 1 for k in params['task'].split(',')}
 
-    #         # Parameter dictionary
-    #         run_parameters = {
-    #             "input_size": INPUT_SIZE,
-    #             "hidden_size": HIDDEN_SIZE,
-    #             "output_size": OUTPUT_SIZE,
-    #             "learning_rate": LEARNING_RATE,
-    #             "epochs": EPOCHS,
-    #             "batch_size": BATCH_SIZE,
-    #             "seed": seed,
-    #             "test_ratio": test_ratio,
-    #             "dropout_rate": DROPOUT_RATE,
-    #             "verbose": verbose,
-    #             "emb_dim":EMB_DIM,
-    #             "data":'emb',
-    #             'model':'mlp',
-    #             'run_id': fol
-    #         }
-    #         run_parameters.update(task)
+            # Parameter dictionary
+            run_parameters = {
+                "input_size": INPUT_SIZE,
+                "hidden_size": HIDDEN_SIZE,
+                "output_size": OUTPUT_SIZE,
+                "learning_rate": LEARNING_RATE,
+                "epochs": EPOCHS,
+                "batch_size": BATCH_SIZE,
+                "seed": seed,
+                "test_ratio": test_ratio,
+                "dropout_rate": DROPOUT_RATE,
+                "verbose": verbose,
+                "emb_dim":EMB_DIM,
+                "data":'emb',
+                'model':'mlp',
+                'run_id': fol
+            }
+            run_parameters.update(task)
 
-    #         with open(os.path.join(out, 'parameters.json'), 'w') as fd:
-    #             json.dump(run_parameters, fd, indent=4)
+            with open(os.path.join(out, 'parameters.json'), 'w') as fd:
+                json.dump(run_parameters, fd, indent=4)
 
 
             
 
     #         ######################################
     #         # Initialize the model
-    #         model = OptimizedMLP(INPUT_SIZE, HIDDEN_SIZE, OUTPUT_SIZE).to(device)
+            model = OptimizedMLP(INPUT_SIZE, HIDDEN_SIZE, OUTPUT_SIZE).to(device)
     #         ######################################
 
-    #         dfm = trainer(out, run_parameters, mapping_path, label_path, datapath, device, dataval, model, process_data_with_windows_mlp)
+            dfm = trainer(out, run_parameters, mapping_path, label_path, datapath, device, dataval, model, process_data_with_windows_mlp)
 
+            del model
+            del dfm
 
     # CNN
 
 
-    rooroot = r"C:\Users\chataint\Documents\projet\humanlisbet\results\bet_embedders\bet_embedders"
-    root_fit = r"C:\Users\chataint\Documents\projet\humanlisbet\results\bet_fits\bet_fits"
-    # folders = os.listdir(rooroot)
 
     # for fol in folders:
     #     print(fol)
@@ -206,8 +207,6 @@ def main():
     #         out = os.path.join(rooroot, fol, f"out_cnn_{seed}")
     #         datapath = os.path.join(rooroot, fol, "embedding_train.numpy")
     #         dataval = os.path.join(rooroot, fol, "embedding_test.numpy")
-    #         mapping_path = r"C:\Users\chataint\Documents\projet\humanlisbet\datasets\humans\category_mapping.json"
-    #         label_path = r"C:\Users\chataint\Documents\projet\humanlisbet\datasets\humans\humans_annoted.label.json"
 
     #         bf = os.path.join(root_fit, fol, 'hyper_params.yaml')
     #         with open(bf, 'r') as fd:
@@ -222,7 +221,7 @@ def main():
     #         LEARNING_RATE = 1e-5
     #         EPOCHS = 500
     #         BATCH_SIZE = 64
-    #         seed = 42
+    #         # seed = seed
     #         test_ratio = 0.8
     #         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     #         DROPOUT = 0.3
@@ -268,14 +267,10 @@ def main():
 
 
     # LSTM
-    rooroot = r"/home/share/schaer2/thibaut/humanlisbet/bet_embedders"
-    root_fit = r"/home/share/schaer2/thibaut/humanlisbet/bet_fits"
-    mapping_path = r"/home/share/schaer2/thibaut/humanlisbet/datasets/humans/category_mapping.json"
-    label_path = r"/home/share/schaer2/thibaut/humanlisbet/datasets/humans/humans_annoted.label.json"
 
-    folders = os.listdir(rooroot)
+    # folders = os.listdir(rooroot)
 
-    for fol in folders:
+    # for fol in folders:
         if fol.endswith('ipynb'):
             continue
         if fol == '13735812':
@@ -307,7 +302,7 @@ def main():
             LEARNING_RATE = 1e-5
             EPOCHS = 500
             BATCH_SIZE = 64
-            # seed = seed
+            seed = seed
             test_ratio = 0.8
             device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
             DROPOUT = 0.3

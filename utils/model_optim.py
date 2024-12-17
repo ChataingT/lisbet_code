@@ -245,7 +245,12 @@ def trainer(out, run_parameters, mapping_path, label_path, datapath, device, dat
 
 
 
-    df = load_embedding(dataval, dc, emb_dim=run_parameters['emb_dim'])
+    
+    if datapath.endswith('.h5'):
+        df = load_h5_data(dataval)
+    else:
+        df = load_embedding(dataval, dc, emb_dim=run_parameters['emb_dim'])
+
     idx_vid_val, X_val, y_val = process_data_with_windows(df)
 
     db_val = AutismDataset(X_val, y_val,idx_vid_val, device=device)

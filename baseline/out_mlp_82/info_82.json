@@ -1,0 +1,18 @@
+{
+    "input_size": 6800,
+    "hidden_size": 128,
+    "output_size": 1,
+    "learning_rate": 1e-05,
+    "epochs": 500,
+    "batch_size": 64,
+    "seed": 82,
+    "test_ratio": 0.8,
+    "dropout_rate": 0.3,
+    "verbose": false,
+    "data": "kp",
+    "model": "mlp",
+    "fr-test-f1": 0.892834208925287,
+    "vid-test-f1": 0.9637087050880154,
+    "fr-val-f1": 0.6290035332616553,
+    "vid-val-f1": 0.6841593780369291
+}
