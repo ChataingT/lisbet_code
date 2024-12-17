@@ -60,7 +60,7 @@ class AutismDataset(Dataset):
     
 
 
-def load_embedding(datapath, dc, emb_dim):
+def load_embedding(datapath, dc=None):
     emb_train = np.load(datapath, allow_pickle=True)
 
     # Initialize an empty list to collect rows for the DataFrame
@@ -72,11 +72,12 @@ def load_embedding(datapath, dc, emb_dim):
             rows.append([video, idx] + coord.tolist())
 
     # Create a DataFrame
-    df = pd.DataFrame(rows, columns=['video', 'frame'] + [f'em_{i}' for i in range(emb_dim)])
+    df = pd.DataFrame(rows, columns=['video', 'frame'] + [f'em_{i}' for i in range(len(coord))])
     df.video = df.video.astype(np.int64)
 
     df = df.drop(columns='frame')
-    df = pd.merge(left=df, right=dc, left_on='video', right_on='video', how='left')
+    if dc:
+        df = pd.merge(left=df, right=dc, left_on='video', right_on='video', how='left')
     # dict_classes = {v:k for k,v in enumerate(df['diagnosis'].unique())}
     # df.diagnosis = df.diagnosis.map(mapping)
 
