@@ -161,12 +161,13 @@ def argument_parser(args=None):
 
 
 if __name__ == "__main__":
-    argument = ["--input", r"C:\Users\chataint\Documents\projet\humanlisbet\results\bet_embedders\bet_embedders\13879972", 
-                "--output", r"C:\Users\chataint\Documents\projet\humanlisbet\test",
-                "--min_clusters", "5",
-                "--max_clusters", "10",
-                "--step", "5",
-                "--batch_size", "4096",
-                "--max_iter", "10",
-                "--debug"]
-    main(argument) 
+    # argument = ["--input", r"C:\Users\chataint\Documents\projet\humanlisbet\results\bet_embedders\bet_embedders\13879972", 
+    #             "--output", r"C:\Users\chataint\Documents\projet\humanlisbet\test",
+    #             "--min_clusters", "5",
+    #             "--max_clusters", "10",
+    #             "--step", "5",
+    #             "--batch_size", "4096",
+    #             "--max_iter", "10",
+    #             "--debug"]
+    # main(argument) 
+    main()
