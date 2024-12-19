@@ -142,6 +142,7 @@ def main(args=None):
 
     fig.suptitle(f"K-Means Clustering on UMAP with {optimal_clusters} Clusters")
     fig.savefig(os.path.join(argu.output, "umap_clusters.png"), dpi=300, bbox_inches='tight', facecolor='white')
+    plt.close(fig)
     
     logging.info("Done.")
     return

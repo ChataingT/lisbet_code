@@ -59,15 +59,23 @@ def main(args=None):
         argu.output = os.path.join(argu.input, "PCA_output")
     os.makedirs(argu.output, exist_ok=True)
 
-    datapath = os.path.join(argu.input, "embedding_train.numpy")
-    dataval = os.path.join(argu.input, "embedding_test.numpy")
+    if argu.debug:
+        datapath = os.path.join("/home/rapids/notebooks/bet_embedders/13879972/train_test.npy")
+        dataval = os.path.join("/home/rapids/notebooks/bet_embedders/13879972/eval_test.npy")
 
-    # Load your temporal encoded data (shape: n_samples, 128 dimensions)
-    train_data =  load_embedding(datapath)# Replace with your data
-    tr = train_data.drop(columns='video').to_numpy()
-
-    eval_data = load_embedding(dataval)
-    te = eval_data.drop(columns='video').to_numpy()
+        tr = np.load(datapath)
+        te = np.load(dataval)
+    
+    else:    
+        datapath = os.path.join(argu.input, "embedding_train.numpy")
+        dataval = os.path.join(argu.input, "embedding_test.numpy")
+    
+        # Load your temporal encoded data (shape: n_samples, 128 dimensions)
+        train_data =  load_embedding(datapath)# Replace with your data
+        tr = train_data.drop(columns='video').to_numpy()
+    
+        eval_data = load_embedding(dataval)
+        te = eval_data.drop(columns='video').to_numpy()
 
     if argu.debug:
         tr = tr[:100]
@@ -202,13 +210,12 @@ def argument_parser(args=None):
 
 
 if __name__ == "__main__":
-    # argument = ["--input", r"C:\Users\chataint\Documents\projet\humanlisbet\results\bet_embedders\bet_embedders\13879972", 
-    #             "--output", r"C:\Users\chataint\Documents\projet\humanlisbet\test",
-    #             "--min_clusters", "5",
-    #             "--max_clusters", "10",
-    #             "--step", "5",
-    #             "--batch_size", "4096",
-    #             "--max_iter", "10",
-    #             "--debug"]
-    # main(argument) 
-    main()
+    argument = ["--input", r"C:\Users\chataint\Documents\projet\humanlisbet\results\bet_embedders\bet_embedders\13879972", 
+                "--output", r"C:\Users\chataint\Documents\projet\humanlisbet\test",
+                "--min_clusters", "5",
+                "--max_clusters", "10",
+                "--step", "5",
+                "--batch_size", "4096",
+                "--max_iter", "10",
+                "--debug"]
+    main(argument) 
