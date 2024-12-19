@@ -7,7 +7,8 @@ import json
 import random
 import sys
 sys.path.append(r"/home/share/schaer2/thibaut/humanlisbet/lisbet_code/utils")
-from utils import trainer, OptimizedMLP, CNN, LSTMModel
+from utils.models import OptimizedMLP, CNN, LSTMModel
+from utils.model_optim import trainer
 
 def process_data_with_windows_mlp(df, window_size=200, stride=30):
     """
@@ -126,85 +127,17 @@ def main():
 
 
     folders = os.listdir(rooroot)
-    # seeds = [random.randint(0, 109) for i in range(5)]
-    seeds = [21,54,68,74,82]
 
-    for fol in folders:
-        if fol.endswith('ipynb'):
-            continue
-        print(fol)
-        for seed in seeds:
-            out = os.path.join(rooroot, fol, f"out_mlp_{seed}")
-            datapath = os.path.join(rooroot, fol, "embedding_train.numpy")
-            dataval = os.path.join(rooroot, fol, "embedding_test.numpy")
-
-            bf = os.path.join(root_fit, fol, 'hyper_params.yaml')
-            with open(bf, 'r') as fd:
-                params = yaml.safe_load(fd)
-            os.makedirs(out, exist_ok=True)
-
-
-            # Hyperparameters
-            HIDDEN_SIZE = 128
-            OUTPUT_SIZE = 1  # Binary classification
-            LEARNING_RATE = 1e-5
-            EPOCHS = 500
-            BATCH_SIZE = 64
-            # seed = seed
-            test_ratio = 0.8
-            device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-            DROPOUT_RATE = 0.3
-            verbose = False
-            EMB_DIM = params['emb_dim']
-            INPUT_SIZE = params['emb_dim'] * 200 # nbr kypoints * windows size in data preprocessing 
-            task = {k: 1 for k in params['task'].split(',')}
-
-            # Parameter dictionary
-            run_parameters = {
-                "input_size": INPUT_SIZE,
-                "hidden_size": HIDDEN_SIZE,
-                "output_size": OUTPUT_SIZE,
-                "learning_rate": LEARNING_RATE,
-                "epochs": EPOCHS,
-                "batch_size": BATCH_SIZE,
-                "seed": seed,
-                "test_ratio": test_ratio,
-                "dropout_rate": DROPOUT_RATE,
-                "verbose": verbose,
-                "emb_dim":EMB_DIM,
-                "data":'emb',
-                'model':'mlp',
-                'run_id': fol
-            }
-            run_parameters.update(task)
-
-            with open(os.path.join(out, 'parameters.json'), 'w') as fd:
-                json.dump(run_parameters, fd, indent=4)
-
-
-            
-
-    #         ######################################
-    #         # Initialize the model
-            model = OptimizedMLP(INPUT_SIZE, HIDDEN_SIZE, OUTPUT_SIZE).to(device)
-    #         ######################################
-
-            dfm = trainer(out, run_parameters, mapping_path, label_path, datapath, device, dataval, model, process_data_with_windows_mlp)
-
-            del model
-            del dfm
-
-    # CNN
-
-
+    # seeds = [random.randint(100, 10009) for i in range(5)]
+    # seeds = [21,54,68,74,82]
+    seeds = [139,360,4148,7630,8522]
 
     # for fol in folders:
-    #     print(fol)
     #     if fol.endswith('ipynb'):
     #         continue
     #     print(fol)
     #     for seed in seeds:
-    #         out = os.path.join(rooroot, fol, f"out_cnn_{seed}")
+    #         out = os.path.join(rooroot, fol, f"out_mlp_{seed}")
     #         datapath = os.path.join(rooroot, fol, "embedding_train.numpy")
     #         dataval = os.path.join(rooroot, fol, "embedding_test.numpy")
 
@@ -213,10 +146,9 @@ def main():
     #             params = yaml.safe_load(fd)
     #         os.makedirs(out, exist_ok=True)
 
+
     #         # Hyperparameters
-    #         INPUT_SIZE = params['emb_dim']
     #         HIDDEN_SIZE = 128
-    #         WINDOW = 200
     #         OUTPUT_SIZE = 1  # Binary classification
     #         LEARNING_RATE = 1e-5
     #         EPOCHS = 500
@@ -224,33 +156,27 @@ def main():
     #         # seed = seed
     #         test_ratio = 0.8
     #         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    #         DROPOUT = 0.3
+    #         DROPOUT_RATE = 0.3
     #         verbose = False
-    #         NUM_FILTER=64
-    #         KERNEL_SIZE=30   # look at one second
-    #         POOL_SIZE=2
-    #         EMB_DIM = INPUT_SIZE
-
+    #         EMB_DIM = params['emb_dim']
+    #         INPUT_SIZE = params['emb_dim'] * 200 # nbr kypoints * windows size in data preprocessing 
     #         task = {k: 1 for k in params['task'].split(',')}
+
     #         # Parameter dictionary
     #         run_parameters = {
     #             "input_size": INPUT_SIZE,
     #             "hidden_size": HIDDEN_SIZE,
     #             "output_size": OUTPUT_SIZE,
-    #             "window": WINDOW,
     #             "learning_rate": LEARNING_RATE,
     #             "epochs": EPOCHS,
     #             "batch_size": BATCH_SIZE,
     #             "seed": seed,
     #             "test_ratio": test_ratio,
-    #             "dropout": DROPOUT,
-    #             "num_filter": NUM_FILTER,
+    #             "dropout_rate": DROPOUT_RATE,
     #             "verbose": verbose,
-    #             "kernel_size":KERNEL_SIZE,
-    #             'pool_size':POOL_SIZE,
     #             "emb_dim":EMB_DIM,
     #             "data":'emb',
-    #             'model':'cnn',
+    #             'model':'mlp',
     #             'run_id': fol
     #         }
     #         run_parameters.update(task)
@@ -258,24 +184,90 @@ def main():
     #         with open(os.path.join(out, 'parameters.json'), 'w') as fd:
     #             json.dump(run_parameters, fd, indent=4)
 
-    #         # Initialize the model, loss, and optimizer
-    #         model = CNN(input_size=INPUT_SIZE, sequence_length=WINDOW, num_filters=NUM_FILTER, 
-    #                     kernel_size=KERNEL_SIZE, pool_size=POOL_SIZE, hidden_size=HIDDEN_SIZE, output_size=OUTPUT_SIZE).to(device)
+    #         # Initialize the model
+    #         model = OptimizedMLP(INPUT_SIZE, HIDDEN_SIZE, OUTPUT_SIZE).to(device)
 
-    #         dfm = trainer(out, run_parameters, mapping_path, label_path, datapath, device, dataval, model, process_data_with_windows_cnn)
+    #         dfm = trainer(out, run_parameters, mapping_path, label_path, datapath, device, dataval, model, process_data_with_windows_mlp)
+
+    #         del model
+    #         del dfm
+
+    # CNN
+
+
+
+    for fol in folders:
+        if fol.endswith('ipynb'):
+            continue
+        print(fol)
+        for seed in seeds:
+            out = os.path.join(rooroot, fol, f"out_cnn_{seed}")
+            datapath = os.path.join(rooroot, fol, "embedding_train.numpy")
+            dataval = os.path.join(rooroot, fol, "embedding_test.numpy")
+
+            bf = os.path.join(root_fit, fol, 'hyper_params.yaml')
+            with open(bf, 'r') as fd:
+                params = yaml.safe_load(fd)
+            os.makedirs(out, exist_ok=True)
+
+            # Hyperparameters
+            INPUT_SIZE = params['emb_dim']
+            HIDDEN_SIZE = 128
+            WINDOW = 200
+            OUTPUT_SIZE = 1  # Binary classification
+            LEARNING_RATE = 1e-5
+            EPOCHS = 500
+            BATCH_SIZE = 64
+            # seed = seed
+            test_ratio = 0.8
+            device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+            DROPOUT = 0.3
+            verbose = False
+            NUM_FILTER=64
+            KERNEL_SIZE=30   # look at one second
+            POOL_SIZE=2
+            EMB_DIM = INPUT_SIZE
+
+            task = {k: 1 for k in params['task'].split(',')}
+            # Parameter dictionary
+            run_parameters = {
+                "input_size": INPUT_SIZE,
+                "hidden_size": HIDDEN_SIZE,
+                "output_size": OUTPUT_SIZE,
+                "window": WINDOW,
+                "learning_rate": LEARNING_RATE,
+                "epochs": EPOCHS,
+                "batch_size": BATCH_SIZE,
+                "seed": seed,
+                "test_ratio": test_ratio,
+                "dropout": DROPOUT,
+                "num_filter": NUM_FILTER,
+                "verbose": verbose,
+                "kernel_size":KERNEL_SIZE,
+                'pool_size':POOL_SIZE,
+                "emb_dim":EMB_DIM,
+                "data":'emb',
+                'model':'cnn',
+                'run_id': fol
+            }
+            run_parameters.update(task)
+
+            with open(os.path.join(out, 'parameters.json'), 'w') as fd:
+                json.dump(run_parameters, fd, indent=4)
+
+            # Initialize the model, loss, and optimizer
+            model = CNN(input_size=INPUT_SIZE, sequence_length=WINDOW, num_filters=NUM_FILTER, 
+                        kernel_size=KERNEL_SIZE, pool_size=POOL_SIZE, hidden_size=HIDDEN_SIZE, output_size=OUTPUT_SIZE).to(device)
+
+            dfm = trainer(out, run_parameters, mapping_path, label_path, datapath, device, dataval, model, process_data_with_windows_cnn)
 
 
 
     # LSTM
 
-    # folders = os.listdir(rooroot)
 
-    # for fol in folders:
+    for fol in folders:
         if fol.endswith('ipynb'):
-            continue
-        if fol == '13735812':
-            continue
-        if fol == '13830986':
             continue
         print(fol)
         
@@ -290,8 +282,6 @@ def main():
             with open(bf, 'r') as fd:
                 params = yaml.safe_load(fd)
             os.makedirs(out, exist_ok=True)
-
-
 
 
             # Hyperparameters
@@ -345,5 +335,6 @@ def main():
 
             del model 
             del dfm
+
 if __name__ == '__main__':
     main()

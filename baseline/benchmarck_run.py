@@ -6,8 +6,9 @@ import yaml
 import json
 import random
 import sys
-sys.path.append(r"/home/share/schaer2/thibaut/humanlisbet/lisbet_code")
-from utils import trainer, OptimizedMLP, CNN, LSTMModel
+sys.path.append(r"/home/share/schaer2/thibaut/humanlisbet/lisbet_code/utils")
+from models import OptimizedMLP, CNN, LSTMModel
+from model_optim import trainer
 
 def process_data_with_windows_mlp(df, window_size=200, stride=30):
     """
@@ -125,7 +126,9 @@ def main():
     label_path = r"/home/share/schaer2/thibaut/humanlisbet/datasets/humans/humans_annoted.label.json"
     rout = r"/home/share/schaer2/thibaut/humanlisbet/lisbet_code/baseline"
 
-    seeds = [21,54,68,74,82]
+    # seeds = [21,54,68,74,82]
+    seeds = [139,360,4148,7630,8522]
+
     for seed in seeds:
         out = os.path.join(rout, f"out_mlp_{seed}")
         os.makedirs(out, exist_ok=True)
@@ -166,13 +169,13 @@ def main():
 
 #         ######################################
 #         # Initialize the model
-        # model = OptimizedMLP(INPUT_SIZE, HIDDEN_SIZE, OUTPUT_SIZE).to(device)
+        model = OptimizedMLP(INPUT_SIZE, HIDDEN_SIZE, OUTPUT_SIZE).to(device)
 #         ######################################
 
-        # dfm = trainer(out, run_parameters, mapping_path, label_path, datapath, device, dataval, model, process_data_with_windows_mlp)
+        dfm = trainer(out, run_parameters, mapping_path, label_path, datapath, device, dataval, model, process_data_with_windows_mlp)
 
-        # del model
-        # del dfm
+        del model
+        del dfm
         
 
     # CNN
@@ -225,13 +228,13 @@ def main():
             json.dump(run_parameters, fd, indent=4)
 
         # Initialize the model, loss, and optimizer
-        # model = CNN(input_size=INPUT_SIZE, sequence_length=WINDOW, num_filters=NUM_FILTER, 
-        #             kernel_size=KERNEL_SIZE, pool_size=POOL_SIZE, hidden_size=HIDDEN_SIZE, output_size=OUTPUT_SIZE).to(device)
+        model = CNN(input_size=INPUT_SIZE, sequence_length=WINDOW, num_filters=NUM_FILTER, 
+                    kernel_size=KERNEL_SIZE, pool_size=POOL_SIZE, hidden_size=HIDDEN_SIZE, output_size=OUTPUT_SIZE).to(device)
 
-        # dfm = trainer(out, run_parameters, mapping_path, label_path, datapath, device, dataval, model, process_data_with_windows_cnn)
+        dfm = trainer(out, run_parameters, mapping_path, label_path, datapath, device, dataval, model, process_data_with_windows_cnn)
 
-        # del model
-        # del dfm
+        del model
+        del dfm
 
     # LSTM
 

@@ -1,0 +1,16 @@
+{
+    "input_size": 34,
+    "hidden_size": 64,
+    "output_size": 1,
+    "window": 200,
+    "learning_rate": 1e-05,
+    "epochs": 500,
+    "batch_size": 64,
+    "seed": 139,
+    "test_ratio": 0.8,
+    "dropout": 0.3,
+    "num_layer": 1,
+    "verbose": false,
+    "data": "kp",
+    "model": "lstm"
+}

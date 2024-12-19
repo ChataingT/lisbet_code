@@ -12,9 +12,9 @@ import pandas as pd
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
 
 import sys
-sys.path.append(r"C:\Users\chataint\Documents\projet\humanlisbet\baseline")
-from utils import load_embedding, AutismDataset, debug_metrics, get_metrics, compute_validation, load_h5_data
-
+from data import load_embedding, load_h5_data
+from metrics import debug_metrics, get_metrics, compute_validation
+from models import AutismDataset
 # early stopping based of f1
 
 class EarlyStoppingMetric:
@@ -133,7 +133,7 @@ def trainer(out, run_parameters, mapping_path, label_path, datapath, device, dat
         # records, labels = load_h5_data(datapath)
         df = load_h5_data(datapath)
     else:
-        df = load_embedding(datapath, dc, emb_dim=run_parameters['emb_dim'])
+        df = load_embedding(datapath, dc)
 
     rec_train, rec_test = train_test_split(
                 df, test_size=run_parameters['test_ratio'], random_state=run_parameters['seed'], stratify=df.diagnosis
@@ -249,7 +249,7 @@ def trainer(out, run_parameters, mapping_path, label_path, datapath, device, dat
     if datapath.endswith('.h5'):
         df = load_h5_data(dataval)
     else:
-        df = load_embedding(dataval, dc, emb_dim=run_parameters['emb_dim'])
+        df = load_embedding(dataval, dc)
 
     idx_vid_val, X_val, y_val = process_data_with_windows(df)
 

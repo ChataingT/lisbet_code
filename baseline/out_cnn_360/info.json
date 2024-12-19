@@ -1,0 +1,22 @@
+{
+    "input_size": 34,
+    "hidden_size": 128,
+    "output_size": 1,
+    "window": 200,
+    "learning_rate": 1e-05,
+    "epochs": 500,
+    "batch_size": 64,
+    "seed": 360,
+    "test_ratio": 0.8,
+    "dropout": 0.3,
+    "num_filter": 64,
+    "verbose": false,
+    "kernel_size": 30,
+    "pool_size": 2,
+    "data": "kp",
+    "model": "cnn",
+    "fr-test-f1": 0.9233571862365859,
+    "vid-test-f1": 0.9450124343741365,
+    "fr-val-f1": 0.6144207088939846,
+    "vid-val-f1": 0.6003996003996004
+}

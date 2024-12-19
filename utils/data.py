@@ -58,7 +58,7 @@ def load_embedding(datapath, dc=None):
     df.video = df.video.astype(np.int64)
 
     df = df.drop(columns='frame')
-    if dc:
+    if dc is not None:
         df = pd.merge(left=df, right=dc, left_on='video', right_on='video', how='left')
     # dict_classes = {v:k for k,v in enumerate(df['diagnosis'].unique())}
     # df.diagnosis = df.diagnosis.map(mapping)
