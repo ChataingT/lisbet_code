@@ -1,7 +1,8 @@
 import numpy as np
-import umap
-from sklearn.cluster import KMeans, MiniBatchKMeans
+from cuml.cluster import KMeans
+from cuml import PCA
 from sklearn.metrics import silhouette_score
+from sklearn.cluster import SpectralClustering
 import matplotlib.pyplot as plt
 import pandas as pd
 import os
@@ -40,7 +41,7 @@ def kmeans_clustering_mini_batch(data_train, data_eval, max_clusters=10, min_clu
     silhouette_te = []
     logging.info("Running KMeans clustering")
     for k in tqdm(range(min_clusters, max_clusters + 1, step)):
-        kmeans = MiniBatchKMeans(n_clusters=k, n_init=10, max_iter=max_iter, batch_size=batch_size)
+        kmeans = KMeans(n_clusters=k, n_init=10, max_iter=max_iter, batch_size=batch_size)
         labels_tr = kmeans.fit_predict(data_train)
         labels_te = kmeans.predict(data_eval)
         inertia.append(kmeans.inertia_)
@@ -55,7 +56,7 @@ def main(args=None):
     argu = argument_parser(args)
 
     if argu.output is None:
-        argu.output = os.path.join(argu.input, "umap_output")
+        argu.output = os.path.join(argu.input, "PCA_output")
     os.makedirs(argu.output, exist_ok=True)
 
 
@@ -64,13 +65,13 @@ def main(args=None):
 
     # Load your temporal encoded data (shape: n_samples, 128 dimensions)
     train_data =  load_embedding(datapath)# Replace with your data
-    td = train_data.drop(columns='video').to_numpy()
+    tr = train_data.drop(columns='video').to_numpy()
 
     eval_data = load_embedding(dataval)
     te = eval_data.drop(columns='video').to_numpy()
 
     if argu.debug:
-        td = td[:100]
+        tr = tr[:100]
         te = te[:100] 
         argu.max_clusters = 10
         argu.min_clusters = 5
@@ -82,17 +83,17 @@ def main(args=None):
     with open(os.path.join(argu.output, "args.txt"), "w") as f:
        json.dump(argu.__dict__, f, indent=4)
        
-    # Step 1: Dimensionality Reduction with UMAP
-    logging.info("Running UMAP")
-    umap_reducer = umap.UMAP()
+    # Step 1: Dimensionality Reduction with PCA
+    logging.info("Running PCA")
+    reducer = PCA(n_components=2)
 
-    data_umap_train = umap_reducer.fit_transform(td)
-    data_umap_eval = umap_reducer.transform(te)
+    data_train = reducer.fit_transform(tr)
+    data_eval = reducer.transform(te)
 
 
     # Run clustering
-    inertia, silhouette_tr, silhouette_te = kmeans_clustering_mini_batch(data_umap_train, 
-                                                                         data_umap_eval, 
+    inertia, silhouette_tr, silhouette_te = kmeans_clustering_mini_batch(data_train, 
+                                                                         data_eval, 
                                                                          argu.max_clusters, 
                                                                          argu.min_clusters, 
                                                                          argu.step,
@@ -123,31 +124,69 @@ def main(args=None):
     # Step 4: Visualization of Clusters
     logging.info("Visualizing Clusters")
     optimal_clusters = silhouette_tr.index(max(silhouette_tr)) + 2
-    kmeans = MiniBatchKMeans(n_clusters=optimal_clusters, n_init=10, max_iter=argu.max_iter, batch_size=argu.batch_size)
-    labels_tr = kmeans.fit_predict(data_umap_train)
-    labels_te = kmeans.predict(data_umap_eval)
+    kmeans = KMeans(n_clusters=optimal_clusters, n_init=10, max_iter=argu.max_iter, batch_size=argu.batch_size)
+    labels_tr = kmeans.fit_predict(data_train)
+    labels_te = kmeans.predict(data_eval)
 
     logging.info(f"Optimal number of clusters: {optimal_clusters}")
 
     fig, ax = plt.subplots(1, 2, figsize=(12, 5))
-    ax[0].scatter(data_umap_train[:, 0], data_umap_train[:, 1], c=labels_tr, cmap='viridis', s=10)
+    ax[0].scatter(data_train[:, 0], data_train[:, 1], c=labels_tr, cmap='viridis', s=10)
     ax[0].set_title(f"training data")
-    ax[0].set_xlabel("UMAP Component 1")
-    ax[0].set_ylabel("UMAP Component 2")
+    ax[0].set_xlabel("PCA Component 1")
+    ax[0].set_ylabel("PCA Component 2")
 
-    ax[1].scatter(data_umap_eval[:, 0], data_umap_eval[:, 1], c=labels_te, cmap='viridis', s=10)
+    ax[1].scatter(data_eval[:, 0], data_eval[:, 1], c=labels_te, cmap='viridis', s=10)
     ax[1].set_title( "eval data")
-    ax[1].set_xlabel("UMAP Component 1")
-    ax[1].set_ylabel("UMAP Component 2")
+    ax[1].set_xlabel("PCA Component 1")
+    ax[1].set_ylabel("PCA Component 2")
 
-    fig.suptitle(f"K-Means Clustering on UMAP with {optimal_clusters} Clusters")
-    fig.savefig(os.path.join(argu.output, "umap_clusters.png"), dpi=300, bbox_inches='tight', facecolor='white')
+    fig.suptitle(f"K-Means Clustering on PCA with {optimal_clusters} Clusters")
+    fig.savefig(os.path.join(argu.output, "PCA_clusters.png"), dpi=300, bbox_inches='tight', facecolor='white')
     
-    logging.info("Done.")
+    logging.info("Into spectral study.")
+
+    cov_matrix = np.cov(tr.T)  # Transpose data to have features as rows
+    eigenvalues, eigenvectors = np.linalg.eigh(cov_matrix)
+
+    # plot eigenvalues
+    fig, ax = plt.subplots(1, 1, figsize=(10, 5))
+    ax.plot(eigenvalues[::-1])
+    ax.set_title("Eigenvalues")
+    ax.set_xlabel("Index")
+    ax.set_ylabel("Eigenvalue")
+    fig.savefig(os.path.join(argu.output, "eigenvalues.png"), dpi=300, bbox_inches='tight', facecolor='white')
+
+    top_k = 5  # Adjust based on the elbow point in eigenvalues plot
+    spectral = SpectralClustering(n_clusters=top_k, affinity='nearest_neighbors', random_state=42)
+    labels_tr = spectral.fit_predict(tr)
+    labels_te = spectral.predict(te)
+
+    silhouette_tr = silhouette_score(tr, labels_tr)
+    silhouette_te = silhouette_score(te, labels_te)
+    logging.info(f"Silhouette Score - training data: {silhouette_tr}")
+    logging.info(f"Silhouette Score - eval data: {silhouette_te}")
+
+    fig, ax = plt.subplots(1, 2, figsize=(12, 5))
+    ax[0].scatter(data_train[:, 0], data_train[:, 1], c=labels_tr, cmap='viridis', s=10)
+    ax[0].set_title(f"training data")
+    ax[0].set_xlabel("PCA Component 1")
+    ax[0].set_ylabel("PCA Component 2")
+
+    ax[1].scatter(data_eval[:, 0], data_eval[:, 1], c=labels_te, cmap='viridis', s=10)
+    ax[1].set_title( "eval data")
+    ax[1].set_xlabel("PCA Component 1")
+    ax[1].set_ylabel("PCA Component 2")
+
+    fig.suptitle(f"Spectral Clustering on PCA with {top_k} Clusters")
+    fig.savefig(os.path.join(argu.output, "spectral_clusters.png"), dpi=300, bbox_inches='tight', facecolor='white')
+
+    logging.info("Spectral Clustering completed")
+
     return
 
 def argument_parser(args=None):
-    parser = argparse.ArgumentParser(description='UMAP')
+    parser = argparse.ArgumentParser(description='PCA & spectral')
     parser.add_argument('--input', type=str, help='path to the directory containing the embeddings', required=True)
     parser.add_argument('--output', type=str, help='path to the output directory')    
     parser.add_argument('--min_clusters', type=int, help='minimum number of clusters', default=5)
