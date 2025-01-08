@@ -2,3 +2,4 @@
 *.pth
 *.pyc
 rec_*
+out_*
