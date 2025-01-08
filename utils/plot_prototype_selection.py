@@ -35,6 +35,12 @@ def main(args=None):
         type=str,
         help="Path to the .npz file containing the prototype selection results."
     )
+    parser.add_argument(
+        "--output_path",
+        type=str,
+        default="prototype_selection.png",
+        help="Output path for the prototype selection plot."
+    )
     args = parser.parse_args(args)
     data_path = args.data_path
     hmm_info = np.load(data_path)
@@ -90,6 +96,7 @@ def main(args=None):
     # Finalize plot
     axs[0, 0].legend(frameon=False)
     axs[1, 1].legend(frameon=False)
+    plt.savefig(args.output_path)
 
 if __name__ == "__main__":
     main()  
