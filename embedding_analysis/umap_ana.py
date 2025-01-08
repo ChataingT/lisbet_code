@@ -2,6 +2,10 @@ import numpy as np
 import umap
 from sklearn.cluster import KMeans, MiniBatchKMeans
 from sklearn.metrics import silhouette_score
+<<<<<<< Updated upstream
+=======
+
+>>>>>>> Stashed changes
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import MinMaxScaler
 import matplotlib.pyplot as plt
@@ -15,7 +19,8 @@ import logging
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)-8s : %(message)s')
 
-def load_embedding(datapath):
+def load_embedding(datapath, label_path):
+    
     emb_train = np.load(datapath, allow_pickle=True)
 
     # Initialize an empty list to collect rows for the DataFrame
@@ -34,7 +39,18 @@ def load_embedding(datapath):
 
     logging.info(f"Data loaded from {datapath}")
 
-    return df
+    lb = pd.read_excel(label_path)[['VCFS_DATABASE_ADMIN 2::Sujet_ID', 'VCFS_DATABASE_ADMIN 2::Diagnosis']]
+    lb.rename(columns={'VCFS_DATABASE_ADMIN 2::Sujet_ID':'video', 'VCFS_DATABASE_ADMIN 2::Diagnosis':'diag'}, inplace=True)
+    
+    lb['diag'] = lb['diag'].replace({'Low-Risk':'TD'})
+    lb['diag'] = lb['diag'].replace({'Normal_Control':'TD'})
+    lb['diag'] = lb['diag'].replace({'Autism':'ASD'})
+    mapping = {"ASD":0, "TD":1}
+    lb.diag =lb.diag.map(mapping)
+    df = pd.merge(left=df, right=lb, how='left', on='video')
+    labels = df.diag
+    df = df.drop(columns='diag')
+    return df, labels
 
 # Step 2: K-Means Clustering and Finding the Optimal Number of Clusters
 def kmeans_clustering_mini_batch(data_eval, max_clusters=10, min_clusters=2, step=1, max_iter=1000, batch_size=2048):
@@ -64,7 +80,7 @@ def main(args=None):
 
     # Load your temporal encoded data (shape: n_samples, 128 dimensions)
 
-    eval_data = load_embedding(dataval)
+    eval_data, labels = load_embedding(dataval, argu.label)
     te = eval_data.drop(columns='video').to_numpy()
 
     if argu.debug:
@@ -83,22 +99,64 @@ def main(args=None):
     # Step 1: Dimensionality Reduction with UMAP
     logging.info("Running UMAP")
     umap_reducer = Pipeline(
+<<<<<<< Updated upstream
         [
             ("scaler", MinMaxScaler()),
             ("reducer", umap.UMAP(n_neighbors=60, verbose=True)),
         ]
+=======
+    [
+        ("scaler", MinMaxScaler()),
+        ("reducer", umap.UMAP(n_neighbors=60, verbose=True)),
+    ]
+>>>>>>> Stashed changes
     )
 
     data_umap_eval = umap_reducer.fit_transform(te)
 
 
+    # Plot UMAP
+    fig, ax = plt.subplots(figsize=(2.2, 2.5))
+
+    # Sample 10K points
+    if len(data_umap_eval) < 10000:
+        sample_idx = [i for i in range(len(data_umap_eval))]
+    else:
+        rng = np.random.default_rng(1789)
+        sample_idx = rng.choice(data_umap_eval.shape[0], replace=False, size=10000)
+
+    # Scale marker size to compensate for unbalanced classes
+    # marker_size = 0.5 * np.array([class_weight[label] for label in test_labels])
+
+    # Plot data
+    sc = ax.scatter(
+        data_umap_eval[sample_idx, 0],
+        data_umap_eval[sample_idx, 1],
+        # s=marker_size[sample_idx],
+        c=labels[sample_idx],
+        marker=".",
+        # vmin=-0.5,
+        # vmax=NUM_CLASSES_TASK1 - 0.5,
+        # cmap=plotting.get_custom_cmap(NUM_CLASSES_TASK1),
+    )
+
+    fig.savefig(os.path.join(argu.output, "umap.png"), dpi=300, bbox_inches='tight', facecolor='white')
+
     # Run clustering
     inertia, silhouette_te = kmeans_clustering_mini_batch(data_umap_eval, 
+<<<<<<< Updated upstream
                                                         argu.max_clusters, 
                                                         argu.min_clusters, 
                                                         argu.step,
                                                         argu.max_iter,
                                                         argu.batch_size)
+=======
+                                                                         argu.max_clusters, 
+                                                                         argu.min_clusters, 
+                                                                         argu.step,
+                                                                         argu.max_iter,
+                                                                         argu.batch_size)
+>>>>>>> Stashed changes
 
     # Step 3: Plot Inertia and Silhouette Scores
     fig, ax = plt.subplots(1, 2, figsize=(17, 5))
@@ -107,7 +165,10 @@ def main(args=None):
     ax[0].set_xlabel("Number of Clusters")
     ax[0].set_ylabel("Inertia")
 
+<<<<<<< Updated upstream
 
+=======
+>>>>>>> Stashed changes
     ax[1].plot(range(argu.min_clusters, argu.max_clusters + 1, argu.step), silhouette_te, marker='o')
     ax[1].set_title("Silhouette Score - eval data")
     ax[1].set_xlabel("Number of Clusters")
@@ -143,6 +204,7 @@ def argument_parser(args=None):
     parser = argparse.ArgumentParser(description='UMAP')
     parser.add_argument('--input', type=str, help='path to the directory containing the embeddings', required=True)
     parser.add_argument('--output', type=str, help='path to the output directory')    
+    parser.add_argument('--label', type=str, help='path to the label file')    
     parser.add_argument('--min_clusters', type=int, help='minimum number of clusters', default=5)
     parser.add_argument('--max_clusters', type=int, help='maximum number of clusters', default=100)
     parser.add_argument('--step', type=int, help='step size for number of clusters', default=5)
@@ -154,12 +216,31 @@ def argument_parser(args=None):
 
 
 if __name__ == "__main__":
+<<<<<<< Updated upstream
     argument = ["--input", r"C:\Users\chataint\Documents\projet\humanlisbet\results\bet_embedders\bet_embedders\13879972", 
                 "--output", r"C:\Users\chataint\Documents\projet\humanlisbet\test",
                 "--min_clusters", "5",
                 "--max_clusters", "100",
                 "--step", "5",
                 "--batch_size", "8112",
+=======
+    # argument = ["--input", r"C:\Users\chataint\Documents\projet\humanlisbet\results\bet_embedders\bet_embedders\13879972", 
+    #             "--output", r"C:\Users\chataint\Documents\projet\humanlisbet\test",
+    #             "--min_clusters", "5",
+    #             "--max_clusters", "10",
+    #             "--step", "5",
+    #             "--batch_size", "4096",
+    #             "--max_iter", "10",
+    #             "--debug"]
+    # main(argument) 
+    argument = ["--input", r"/home/share/schaer2/thibaut/humanlisbet/bet_embedders/13879972", 
+                "--output", r"/home/share/schaer2/thibaut/humanlisbet/test",
+                "--label", r"/home/share/schaer2/thibaut/humanlisbet/datasets/humans/data_mapping.xlsx",
+                "--min_clusters", "5",
+                "--max_clusters", "100",
+                "--step", "5",
+                "--batch_size", "24444",
+>>>>>>> Stashed changes
                 "--max_iter", "1000",
                 # "--debug"
                 ]

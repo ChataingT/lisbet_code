@@ -47,7 +47,7 @@ def kmeans_clustering_mini_batch(data_train, data_eval, max_clusters=10, min_clu
         inertia.append(kmeans.inertia_)
 
         silhouette_tr.append(silhouette_score(data_train, labels_tr))
-        silhouette_te.append(silhouette_score(data_train, labels_te))
+        silhouette_te.append(silhouette_score(data_eval, labels_te))
     return inertia, silhouette_tr, silhouette_te
 
 
