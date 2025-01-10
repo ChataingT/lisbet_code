@@ -20,14 +20,14 @@ def load_h5_data(datapath):
 
     labels = []
     for val in records.values():
-        labels.append(val['diag'][0])
+        labels.append(val['annotations'][0])
     records = list(tuple(records.items()))
 
     dr = pd.DataFrame()
     for vid in records:
         id = vid[0]
         frs = vid[1]['keypoints']
-        diag = vid[1]['diag'][0]
+        diag = vid[1]['annotations'][0]
         df = pd.DataFrame(frs)
         df['video']=int(id)
         df['diagnosis']=int(diag)
@@ -58,6 +58,22 @@ def load_embedding(datapath, dc=None):
     df.video = df.video.astype(np.int64)
 
     df = df.drop(columns='frame')
+    if dc is not None:
+        df = pd.merge(left=df, right=dc, left_on='video', right_on='video', how='left')
+    # dict_classes = {v:k for k,v in enumerate(df['diagnosis'].unique())}
+    # df.diagnosis = df.diagnosis.map(mapping)
+
+    return df
+
+
+def load_flat_embedding(datapath, dc=None):
+    emb_train = np.load(datapath, allow_pickle=True)
+
+    # Create a DataFrame
+    df = pd.DataFrame(emb_train, columns=[f'em_{i}' for i in range(emb_train.shape[1]-1)]+['video'], dtype=np.float32)
+    df.video = df.video.astype(np.int64)
+
+    # df = df.drop(columns='frame')
     if dc is not None:
         df = pd.merge(left=df, right=dc, left_on='video', right_on='video', how='left')
     # dict_classes = {v:k for k,v in enumerate(df['diagnosis'].unique())}

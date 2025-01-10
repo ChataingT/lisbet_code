@@ -12,7 +12,7 @@ import pandas as pd
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
 
 import sys
-from data import load_embedding, load_h5_data
+from data import load_embedding, load_h5_data, load_flat_embedding
 from metrics import debug_metrics, get_metrics, compute_validation
 from models import AutismDataset
 # early stopping based of f1
@@ -132,6 +132,8 @@ def trainer(out, run_parameters, mapping_path, label_path, datapath, device, dat
     if datapath.endswith('.h5'):
         # records, labels = load_h5_data(datapath)
         df = load_h5_data(datapath)
+    elif datapath.endswith('.npy'):
+        df = load_flat_embedding(datapath, dc)
     else:
         df = load_embedding(datapath, dc)
 
@@ -245,9 +247,12 @@ def trainer(out, run_parameters, mapping_path, label_path, datapath, device, dat
 
 
 
-    
+
     if datapath.endswith('.h5'):
+        # records, labels = load_h5_data(datapath)
         df = load_h5_data(dataval)
+    elif datapath.endswith('.npy'):
+        df = load_flat_embedding(dataval, dc)
     else:
         df = load_embedding(dataval, dc)
 
